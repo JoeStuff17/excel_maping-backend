@@ -16,7 +16,9 @@ export class FileController {
     const file = await this.fileService.creates(payload);
     return res.status(HttpStatus.OK).json({
       success: file.success,
-      message: file.message
+      message: file.message,
+      data: file.data,
+      err: file.err
     })
   }
 
@@ -60,14 +62,15 @@ export class FileController {
     })
   }
 
-  @Get('/count')
+  @Get('/tot-count')
   async rowCount(@Res() res): Promise<any>{
     const c = await this.fileService.countRow();
     return res.status(HttpStatus.OK).json({
       success: c.success,
       message: c.message,
       data: c.data,
-      error: c.err
     })
   }
+
+  
 }

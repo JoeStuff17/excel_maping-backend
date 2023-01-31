@@ -6,7 +6,8 @@ import * as XLSX from 'xlsx';
 //  import ff from 'fs';
 
 var xml = require('fs');
-// const arr = [];
+// let a = 0;
+
 
 @Injectable()
 export class FileService {
@@ -19,6 +20,7 @@ export class FileService {
     async creates(payload): Promise<any> {
 
         const arr = [];
+        let s = 0;
         for (let i = 0; i < payload.id.length; i++) {
             //console.log(payload.name[i])
             if (payload.id[i] == null || payload.name[i] == null || payload.age[i] === null || payload.sex[i] == null) 
@@ -28,36 +30,32 @@ export class FileService {
          else{
             const data = await this.fileRepo.create({ id: payload.id[i], name: payload.name[i], age: payload.age[i], sex: payload.sex[i] });
             const f = await this.fileRepo.save(data);
+            s++;
          }
-
-           
         }
-
         let cs = await xml.createWriteStream('./xml/sample.txt');
-        for (let i = 0; i < arr.length; i++) {
-            // console.log(arr[i]);
-                        
-                cs.write("Id:"+arr[i].Id+"\t"),
+        let a =0;
+        for (let i = 0; i < arr.length; i++) {                      
+                cs.write("Id:"+arr[i].Id+"\t\t"),
                 cs.write("Name:"+arr[i].Name+"\t"),
                 cs.write("Age:"+arr[i].Age+"\t"),
                 cs.write("Sex:"+arr[i].Sex+"\n")
+                a++;
         }
         await cs.end();
-        // console.log(arr);
         return {
             success: true,
-            message: "Data Uploaded successfully",
+            message: "Null_data Uploaded in txt_file successfully",
+            data: s,
+            err : a
         }
     }
 
     async readsheet(): Promise<any> {
         const a = await this.fileRepo.query("SELECT *  FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'file';")
-
-        //console.log(a[0]);
         const ff = [];
 
         for (let i = 0; i < a.length; i++) {
-            // console.log(a[i].COLUMN_NAME)
             if (a[i].COLUMN_NAME == 'Gid' || a[i].COLUMN_NAME == 'createdAt' || a[i].COLUMN_NAME == 'updateAt') { }
             else {
                 ff.push(a[i].COLUMN_NAME);
@@ -74,12 +72,10 @@ export class FileService {
 
     async countRow(){
         const c = await this.fileRepo.count();
-        // console.log(c);
         return {
             success: true,
             message: 'File-count Fetched Successfully!',
             data: c,
-            err: null,
         };
     }
 }

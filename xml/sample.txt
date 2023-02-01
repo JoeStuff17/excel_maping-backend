@@ -1,2 +1,0 @@
-Id:2		Name:Murali	Age:M	Sex:null
-Id:3		Name:ggg	Age:null	Sex:21

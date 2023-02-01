@@ -37,7 +37,7 @@ export class FileService {
         let a =0;
         for (let i = 0; i < arr.length; i++) {                      
                 cs.write("Id:"+arr[i].Id+"\t\t"),
-                cs.write("Name:"+arr[i].Name+"\t"),
+                cs.write("Name:"+arr[i].Name+"\t\t"),
                 cs.write("Age:"+arr[i].Age+"\t"),
                 cs.write("Sex:"+arr[i].Sex+"\n")
                 a++;

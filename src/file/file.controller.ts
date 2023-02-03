@@ -1,4 +1,3 @@
-import { FileDto } from './dto/file.dto';
 import { diskStorage } from 'multer';
 import { FileService } from './file.service';
 import { Body, Controller, FileTypeValidator, Get, HttpStatus, MaxFileSizeValidator, ParseFilePipe, Post, Res, UploadedFile, UseInterceptors, UsePipes, ValidationPipe } from '@nestjs/common';

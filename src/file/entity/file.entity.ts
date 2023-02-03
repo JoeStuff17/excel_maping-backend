@@ -12,16 +12,16 @@ export class FileEntity {
     Gid: number;
 
     @Column({ nullable: true })
-    id: string;
+    Id: string;
 
     @Column({ nullable: true })
-    name: string;
+    Name: string;
 
     @Column({ nullable: true })
-    age: string;
+    Age: string;
 
     @Column({ nullable: true })
-    sex: string;
+    Gender: string;
 
     @CreateDateColumn()
     createdAt: Date;

@@ -2,7 +2,6 @@ import { FileEntity } from './entity/file.entity';
 import { Injectable, Res } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import * as XLSX from 'xlsx';
 //  import ff from 'fs';
 
 var xml = require('fs');
@@ -21,33 +20,34 @@ export class FileService {
 
         const arr = [];
         let s = 0;
-        for (let i = 0; i < payload.id.length; i++) {
+        for (let i = 0; i < payload.Id.length; i++) {
             //console.log(payload.name[i])
-            if (payload.id[i] == null || payload.name[i] == null || payload.age[i] === null || payload.sex[i] == null) 
-            {
-                arr.push({Id:payload.id[i], Name:payload.name[i], Age:payload.age[i], Sex:payload.sex[i]}, );
+            if (payload.Id[i] == null || payload.Name[i] == null || payload.Age[i] === null || payload.Gender[i] == null) {
+                arr.push({ Id: payload.Id[i], Name: payload.Name[i], Age: payload.Age[i], Gender: payload.Gender[i] },);
             }
-         else{
-            const data = await this.fileRepo.create({ id: payload.id[i], name: payload.name[i], age: payload.age[i], sex: payload.sex[i] });
-            const f = await this.fileRepo.save(data);
-            s++;
-         }
+            else {
+                const data = await this.fileRepo.create({ Id: payload.Id[i], Name: payload.Name[i], Age: payload.Age[i], Gender: payload.Gender[i] });
+                const f = await this.fileRepo.save(data);
+                s++;
+            }
         }
+
+        //<--------- Failed Entry in .txt file -------->
         let cs = await xml.createWriteStream('./xml/sample.txt');
-        let a =0;
-        for (let i = 0; i < arr.length; i++) {                      
-                cs.write("Id:"+arr[i].Id+"\t\t"),
-                cs.write("Name:"+arr[i].Name+"\t\t"),
-                cs.write("Age:"+arr[i].Age+"\t"),
-                cs.write("Sex:"+arr[i].Sex+"\n")
-                a++;
+        let a = 0;
+        for (let i = 0; i < arr.length; i++) {
+            cs.write("Id:" + arr[i].Id + "\t\t"),
+                cs.write("Name:" + arr[i].Name + "\t\t"),
+                cs.write("Age:" + arr[i].Age + "\t"),
+                cs.write("Gender:" + arr[i].Gender + "\n")
+            a++;
         }
         await cs.end();
         return {
             success: true,
             message: "Null_data Uploaded in txt_file successfully",
             data: s,
-            err : a
+            err: a
         }
     }
 
@@ -70,7 +70,7 @@ export class FileService {
 
     }
 
-    async countRow(){
+    async countRow() {
         const c = await this.fileRepo.count();
         return {
             success: true,

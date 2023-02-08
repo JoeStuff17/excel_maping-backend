@@ -1,8 +1,9 @@
+
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
-import { FileModule } from './file/file.module';
+import { RecordBatchModule } from './record-batch/record-batch.module';
+import { SuccessRecordModule } from './success-record/success-record.module';
+import { FailedRecordModule } from './failed-record/failed-record.module';
 
 @Module({
   imports: [
@@ -13,14 +14,16 @@ import { FileModule } from './file/file.module';
         port: 3306,
         username: 'root',
         password: '',
-        database: 'excel_maping',
+        database: 'excel_mapping',
         autoLoadEntities: true,
         synchronize: true,
       })
     }),
-    FileModule
+    SuccessRecordModule,
+    RecordBatchModule,
+    FailedRecordModule
   ],
-  controllers: [AppController],
-  providers: [AppService],
+  controllers: [],
+  providers: [],
 })
 export class AppModule {}

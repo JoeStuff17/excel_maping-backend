@@ -1,23 +1,23 @@
 import { diskStorage } from 'multer';
-import { FileService } from './file.service';
-import { Body, Controller, FileTypeValidator, Get, HttpStatus, MaxFileSizeValidator, ParseFilePipe, Post, Res, UploadedFile, UseInterceptors, UsePipes, ValidationPipe } from '@nestjs/common';
+import { Body, Controller, Get, HttpStatus, ParseFilePipe, Post, Res, UploadedFile, UseInterceptors, UsePipes, ValidationPipe } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { SuccessRecordService } from './success-record.service';
 
-@Controller('file')
-export class FileController {
-  constructor(private fileService: FileService) { }
+@Controller('success-record')
+export class SuccessRecordController {
+  constructor(private fileService: SuccessRecordService) { }
 
 
   ///----Adding data----///
   @Post('/create')
   @UsePipes(ValidationPipe)
-  async fetch(@Res() res, @Body() payload:{data}): Promise<any> {
+  async create(@Res() res, @Body() payload: { data: any[] }): Promise<any> {
     const file = await this.fileService.creates(payload);
     return res.status(HttpStatus.OK).json({
       success: file.success,
       message: file.message,
       data: file.data,
-      err: file.err
+      // err: file.err
     })
   }
 
@@ -62,7 +62,7 @@ export class FileController {
   }
 
   @Get('/tot-count')
-  async rowCount(@Res() res): Promise<any>{
+  async rowCount(@Res() res): Promise<any> {
     const c = await this.fileService.countRow();
     return res.status(HttpStatus.OK).json({
       success: c.success,
@@ -71,5 +71,4 @@ export class FileController {
     })
   }
 
-  
 }

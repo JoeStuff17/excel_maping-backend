@@ -19,10 +19,10 @@ export class FailedRecordEntity {
     Client_Id: string;
 
     @Column({ nullable: true })
-    Client_Name: string;
+    Customer_Name: string;
 
     @Column({ nullable: true })
-    Mobile_No: string;
+    Customer_MobileNo: string;
 
     @Column({ nullable: true })
     Plan_Id: string;

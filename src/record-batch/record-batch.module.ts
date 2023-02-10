@@ -7,6 +7,7 @@ import { RecordBatchService } from './record-batch.service';
 @Module({
   imports:[TypeOrmModule.forFeature([RecordBatchEntity]),],
   controllers: [RecordBatchController],
-  providers: [RecordBatchService]
+  providers: [RecordBatchService],
+  exports: [RecordBatchService]
 })
 export class RecordBatchModule {}

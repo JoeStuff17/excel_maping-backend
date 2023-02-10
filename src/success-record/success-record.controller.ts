@@ -13,11 +13,13 @@ export class SuccessRecordController {
   @UsePipes(ValidationPipe)
   async create(@Res() res, @Body() payload: { data: any[] }): Promise<any> {
     const file = await this.fileService.creates(payload);
+    // const file = await this.fileService.create(payload);
+
     return res.status(HttpStatus.OK).json({
       success: file.success,
       message: file.message,
       data: file.data,
-      // err: file.err
+      err: file.err
     })
   }
 

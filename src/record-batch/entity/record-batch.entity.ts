@@ -8,19 +8,16 @@ export class RecordBatchEntity{
     @PrimaryGeneratedColumn()
     id: number;
 
-    @Column()
-    batchId: number;
+    @Column({nullable: true, type: 'simple-array'})
+    Client_Id: number[];
 
-    @Column()
-    Client_Id: number;
-
-    @Column()
+    @Column({nullable: true})
     totalCount: number;
 
-    @Column()
+    @Column({nullable: true})
     successCount: number;
 
-    @Column()
+    @Column({nullable: true})
     failedCount: number;
 
     @OneToMany(() => SuccessRecordEntity, (successRecord: SuccessRecordEntity) => successRecord.batch)

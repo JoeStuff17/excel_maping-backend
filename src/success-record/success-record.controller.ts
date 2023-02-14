@@ -73,4 +73,14 @@ export class SuccessRecordController {
     })
   }
 
+  @Get('/suc-records')
+  async getRec(@Res() res): Promise<any> {
+    const c = await this.fileService.getRecords();
+    return res.status(HttpStatus.OK).json({
+      success: c.success,
+      message: c.message,
+      data: c.data,
+    })
+  }
+
 }

@@ -19,4 +19,15 @@ export class FailedRecordService {
 			// err: 
 		}
 	}
+
+	async getRecords(){
+    const r = await this.failRecRepo.find(
+    {  relations:['batch']}
+    );
+    return {
+      success: true,
+      message: 'Failed-Records Fetched Successfully!',
+      data: r,
+    };
+  }
 }

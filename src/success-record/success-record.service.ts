@@ -34,7 +34,7 @@ export class SuccessRecordService {
       // payload.batch = batch.id;
       
       if (payload.Customer_Name[i] == null ||
-        !payload.Customer_MobileNo[i] == null || !payload.Plan_Id[i] == null) {
+        payload.Customer_MobileNo[i] == null || payload.Plan_Id[i] == null) {
         fc.push({
           Client_Id: clientIds, Customer_Name: payload.Customer_Name[i], Customer_MobileNo:
             payload.Customer_MobileNo[i], Plan_Id: payload.Plan_Id[i], batch: batch.id
@@ -143,6 +143,17 @@ export class SuccessRecordService {
       success: true,
       message: 'File-count Fetched Successfully!',
       data: c,
+    };
+  }
+
+  async getRecords(){
+    const r = await this.succcessRepo.find(
+    {  relations:['batch']}
+    );
+    return {
+      success: true,
+      message: 'Success-Records Fetched Successfully!',
+      data: r,
     };
   }
 }

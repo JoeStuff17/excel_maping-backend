@@ -2,6 +2,7 @@ import { FailedRecordEntity } from './../../failed-record/entity/failed-record.e
 import { SuccessRecordEntity } from './../../success-record/entity/success-record.entity';
 import { Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 
+
 @Entity({name:'batch'})
 export class RecordBatchEntity{
 
@@ -19,6 +20,9 @@ export class RecordBatchEntity{
 
     @Column({nullable: true})
     failedCount: number;
+
+    @Column({nullable: true})
+    purpose: string;
 
     @OneToMany(() => SuccessRecordEntity, (successRecord: SuccessRecordEntity) => successRecord.batch)
     successRecord : SuccessRecordEntity[];

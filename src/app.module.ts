@@ -1,9 +1,10 @@
-
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { HttpModule } from "@nestjs/axios";
 import { Module } from '@nestjs/common';
 import { RecordBatchModule } from './record-batch/record-batch.module';
 import { SuccessRecordModule } from './success-record/success-record.module';
 import { FailedRecordModule } from './failed-record/failed-record.module';
+import { ApiService } from './api/api.service';
 
 @Module({
   imports: [
@@ -19,11 +20,12 @@ import { FailedRecordModule } from './failed-record/failed-record.module';
         synchronize: true,
       })
     }),
+    HttpModule,
     SuccessRecordModule,
     RecordBatchModule,
     FailedRecordModule
   ],
   controllers: [],
-  providers: [],
+  providers: [ApiService],
 })
 export class AppModule {}

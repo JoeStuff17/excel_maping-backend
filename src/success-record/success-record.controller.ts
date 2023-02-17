@@ -1,7 +1,8 @@
 import { diskStorage } from 'multer';
-import { Body, Controller, Get, HttpStatus, ParseFilePipe, Post, Res, UploadedFile, UseInterceptors, UsePipes, ValidationPipe } from '@nestjs/common';
+import { Body, Controller, Get, HttpStatus, ParseFilePipe, Post, Query, Req, Res, UploadedFile, UseInterceptors, UsePipes, ValidationPipe } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { SuccessRecordService } from './success-record.service';
+import { Request } from 'express';
 
 @Controller('success-record')
 export class SuccessRecordController {
@@ -80,6 +81,16 @@ export class SuccessRecordController {
       success: c.success,
       message: c.message,
       data: c.data,
+    })
+  }
+
+  @Get('/findById')
+  async getMakes(@Res() res,@Req() payload:Request): Promise<any> {
+    const id = await this.fileService.getMakes(payload);
+    return res.status(HttpStatus.OK).json({
+      success: id.success,
+      message: id.message,
+      data: id.data,
     })
   }
 

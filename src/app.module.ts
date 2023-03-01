@@ -5,6 +5,9 @@ import { RecordBatchModule } from './record-batch/record-batch.module';
 import { SuccessRecordModule } from './success-record/success-record.module';
 import { FailedRecordModule } from './failed-record/failed-record.module';
 import { ApiService } from './api/api.service';
+import { WrapperController } from './wrapper/wrapper.controller';
+import { WrapperService } from './wrapper/wrapper.service';
+import { WrapperModule } from './wrapper/wrapper.module';
 
 @Module({
   imports: [
@@ -23,9 +26,10 @@ import { ApiService } from './api/api.service';
     HttpModule,
     SuccessRecordModule,
     RecordBatchModule,
-    FailedRecordModule
+    FailedRecordModule,
+    WrapperModule
   ],
-  controllers: [],
-  providers: [ApiService],
+  controllers: [WrapperController],
+  providers: [ApiService, WrapperService],
 })
 export class AppModule {}

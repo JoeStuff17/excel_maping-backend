@@ -52,7 +52,7 @@ export class FailedRecordEntity {
     Plan_Id: string;
 
     @Column({ nullable: true })
-    Plan_Purchased_Date: string;
+    Plan_Purchased_Date: Date;
 
     @ManyToOne(() => RecordBatchEntity, (batch: RecordBatchEntity) => batch.failRecord)
     @JoinColumn()

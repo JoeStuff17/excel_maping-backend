@@ -84,14 +84,14 @@ export class SuccessRecordController {
     })
   }
 
-  @Get('/findById')
-  async getMakes(@Res() res,@Req() payload:Request): Promise<any> {
-    const id = await this.fileService.getMakes(payload);
-    return res.status(HttpStatus.OK).json({
-      success: id.success,
-      message: id.message,
-      data: id.data,
-    })
-  }
+  // @Get('/findById')
+  // async getMakes(@Res() res,@Req() payload:Request): Promise<any> {
+  //   const id = await this.fileService.getMakes(payload);
+  //   return res.status(HttpStatus.OK).json({
+  //     success: id.success,
+  //     message: id.message,
+  //     data: id.data,
+  //   })
+  // }
 
 }

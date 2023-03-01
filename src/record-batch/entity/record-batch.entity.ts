@@ -20,6 +20,12 @@ export class RecordBatchEntity{
 
     @Column({nullable: true})
     failedCount: number;
+    
+    @Column({nullable: true})
+    success_ProcessedCount: number;
+
+    @Column({nullable: true})
+    failed_ProcessedCount: number;
 
     @Column({nullable: true})
     purpose: string;

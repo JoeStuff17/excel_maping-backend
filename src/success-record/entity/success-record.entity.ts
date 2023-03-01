@@ -10,6 +10,12 @@ export enum status{
     created = "CREATED"
 }
 
+export enum processed{
+    true = "True",
+    false = "False",
+    null = "Null"
+}
+
 @Entity({ name: 'success_record' })
 export class SuccessRecordEntity {
 
@@ -23,7 +29,7 @@ export class SuccessRecordEntity {
     Customer_Name: string;
 
     @Column({ nullable: true })
-    Customer_MobileNo: number;
+    Customer_MobileNo: string;
 
     @Column({ nullable: true })
     Vehicle_Brand: string;
@@ -47,7 +53,7 @@ export class SuccessRecordEntity {
     Plan_Id: string;
 
     @Column({ nullable: true })
-    Plan_Purchased_Date: string;
+    Plan_Purchased_Date: Date;
 
     @ManyToOne(() => RecordBatchEntity, (batch: RecordBatchEntity) => batch.successRecord)
     @JoinColumn()
@@ -55,6 +61,12 @@ export class SuccessRecordEntity {
 
     @Column({default: status.processing})
     status: string;
+
+    @Column({ nullable: true })
+    Subscription_Id: number;
+
+    @Column({default: processed.null})
+    processed: string;
 
     @CreateDateColumn()
     createdAt: Date;

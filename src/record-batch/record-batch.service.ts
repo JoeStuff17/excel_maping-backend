@@ -26,4 +26,13 @@ export class RecordBatchService {
       data: c,
     };
   }
+
+	async fetch() {
+    const c = await this.batchRepository.find()
+    return {
+      success: true,
+      message: 'File-count Fetched Successfully!',
+      data: c,
+    };
+  }
 }

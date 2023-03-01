@@ -15,5 +15,14 @@ export class RecordBatchController {
       })
     }
 
+    @Get('/records')
+    async records(@Res() res): Promise<any> {
+      const c = await this.recordBatchService.fetch();
+      return res.status(HttpStatus.OK).json({
+        success: c.success,
+        message: c.message,
+        data: c.data,
+      })
+    }
     
 }

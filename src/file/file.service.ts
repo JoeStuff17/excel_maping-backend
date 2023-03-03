@@ -1,85 +1,145 @@
-import { FileEntity } from './entity/file.entity';
-import { Injectable, Res } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import * as XLSX from 'xlsx';
-//  import ff from 'fs';
+import { Injectable,  Logger } from '@nestjs/common';
+require('dotenv').config();
+import * as fs from 'fs';
+import { S3 } from 'aws-sdk';
 
-var xml = require('fs');
-// const arr = [];
 
 @Injectable()
 export class FileService {
-    constructor(@InjectRepository(FileEntity)
-    private fileRepo: Repository<FileEntity>
-    ) { }
+  constructor(
+  ) { }
 
-    // Excel = require('exceljs');
+  logger: Logger = new Logger(FileService.name);
 
-    async creates(payload): Promise<any> {
+  async upload(file: any, folder: string, bucket: string) {
+    const { filename, mimetype } = file;
+    await this.uploadS3(
+      fs.createReadStream(file.path),
+      bucket,
+      filename,
+      mimetype,
+      folder
+    );
+    fs.unlink(file.path, () => true);
+  }
 
-        const arr = [];
-        for (let i = 0; i < payload.id.length; i++) {
-            //console.log(payload.name[i])
-            if (payload.id[i] == null || payload.name[i] == null || payload.age[i] === null || payload.sex[i] == null) 
-            {
-                arr.push({Id:payload.id[i], Name:payload.name[i], Age:payload.age[i], Sex:payload.sex[i]}, );
-            }
-         else{
-            const data = await this.fileRepo.create({ id: payload.id[i], name: payload.name[i], age: payload.age[i], sex: payload.sex[i] });
-            const f = await this.fileRepo.save(data);
-         }
+  async uploadFromLocal(
+    file,
+    folder: string,
+    fileName: string,
+    bucket: string,
+    mimeType: string
+  ) {
+    await this.uploadS3(
+      fs.createReadStream(file.path),
+      bucket,
+      fileName,
+      mimeType,
+      folder
+    );
+  }
 
-           
+  async uploadS3(
+    file,
+    bucket: string,
+    name: string,
+    type: string,
+    folder: string
+  ) {
+    const s3 = this.getS3(bucket);
+    const params = {
+      Bucket: `${bucket}/${folder}`,
+      Key: String(name),
+      Body: fs.createReadStream(file.path),
+      ContentType: type,
+    };
+    return new Promise((resolve, reject) => {
+      s3.upload(params, (err, data) => {
+        if (err) {
+          reject(err.message);
         }
+        resolve(data);
+      });
+    });
+  }
 
-        let cs = await xml.createWriteStream('./xml/sample.txt');
-        for (let i = 0; i < arr.length; i++) {
-            // console.log(arr[i]);
-                        
-                cs.write("Id:"+arr[i].Id+"\t"),
-                cs.write("Name:"+arr[i].Name+"\t"),
-                cs.write("Age:"+arr[i].Age+"\t"),
-                cs.write("Sex:"+arr[i].Sex+"\n")
-        }
-        await cs.end();
-        // console.log(arr);
-        return {
-            success: true,
-            message: "Data Uploaded successfully",
-        }
-    }
+  // async download(data: { id: number }): Promise<any> {
+  //   const file = await this.fileRepository.findOne({ id: data.id });
+  //   const s3 = await this.getS3(file.bucketName);
+  //   const getParams = {
+  //     Bucket: file.bucketName, // your bucket name,
+  //     Key: `${file.path}/${file.displayName}`, // path to the object you're looking for
+  //     // Expires: 30
+  //   };
 
-    async readsheet(): Promise<any> {
-        const a = await this.fileRepo.query("SELECT *  FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'file';")
+  //   const response = await s3.getObject(getParams).promise();
+  //   // const response = await s3.getSignedUrl('getObject', getParams);
+  //   const objectData = await response.Body.toString('base64'); // Use the encoding necessary
 
-        //console.log(a[0]);
-        const ff = [];
+  //   return {
+  //     success: true,
+  //     // data: response,
+  //     data: objectData,
+  //     message: 'Object fetched successfully!',
+  //   };
+  // }
 
-        for (let i = 0; i < a.length; i++) {
-            // console.log(a[i].COLUMN_NAME)
-            if (a[i].COLUMN_NAME == 'Gid' || a[i].COLUMN_NAME == 'createdAt' || a[i].COLUMN_NAME == 'updateAt') { }
-            else {
-                ff.push(a[i].COLUMN_NAME);
-            }
-        }
-        return {
-            success: true,
-            message: 'Profile Fetched Successfully!',
-            data: ff,
-            err: null,
-        };
+  // async getLink(data: { id: number }): Promise<any> {
+  //   const file = await this.fileRepository.findOne({ id: data.id });
+  //   if (file) {
+  //     const s3 = await this.getS3(file.bucketName);
+  //     const getParams = {
+  //       Bucket: file.bucketName, // your bucket name,
+  //       Key: `${file.path}/${file.displayName}`, // path to the object you're looking for
+  //       Expires: 300
+  //     };
+  //     const response = s3.getSignedUrl('getObject', getParams);
+  //     return {
+  //       success: true,
+  //       data: response,
+  //       message: 'Object fetched successfully!',
+  //     };
+  //   }
+  //   return {
+  //     success: true,
+  //     data: '',
+  //     message: 'Object fetched successfully!',
+  //   };
+  // }
 
-    }
+  // async getLinkForClient(data: { id: number }): Promise<any> {
+  //   const file = await this.fileRepository.findOne({ id: data.id });
+  //   if (file) {
+  //     const s3 = await this.getS3(file.bucketName);
+  //     const getParams = {
+  //       Bucket: file.bucketName, // your bucket name,
+  //       Key: `${file.path}/${file.displayName}`, // path to the object you're looking for
+  //       Expires: 3600
+  //     };
+  //     const response = s3.getSignedUrl('getObject', getParams);
+  //     return {
+  //       success: true,
+  //       data: response,
+  //       message: 'Object fetched successfully!',
+  //     };
+  //   }
+  //   return {
+  //     success: true,
+  //     data: '',
+  //     message: 'Object fetched successfully!',
+  //   };
+  // }
 
-    async countRow(){
-        const c = await this.fileRepo.count();
-        // console.log(c);
-        return {
-            success: true,
-            message: 'File-count Fetched Successfully!',
-            data: c,
-            err: null,
-        };
-    }
+  getS3(bucket: string) {
+    return new S3({
+      // apiVersion: process.env.API_VERSION,
+      params: {
+        Bucket: bucket,
+        acl: "public-read",
+      },
+      accessKeyId: process.env.ACCESS_KEY,
+      secretAccessKey: process.env.SECRET_KEY,
+      region: process.env.REGION,
+    });
+  }
 }

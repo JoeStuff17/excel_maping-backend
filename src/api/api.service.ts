@@ -5,11 +5,11 @@ import { map } from 'rxjs';
 
 @Injectable()
 export class ApiService {
-  url = "https://vmsmatrix.readyassist.net/api/";
+  url = "https://vmsmatrix.readyassist.net/api/"; //dev
   constructor(
     private readonly http: HttpService
   ) { }
-  token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NjAsIm1vYmlsZU5vIjoiODgyNTY5Nzc1MCIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTY3NzU1Nzc3MywiZXhwIjoxNjc3NjQ0MTczfQ.SzhlBhpLMlx4rfLxPSn-0kHHqYDz7h0X6d-_oYgbysM";
+  token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NjAsIm1vYmlsZU5vIjoiODgyNTY5Nzc1MCIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTY3NzgyMjAxNiwiZXhwIjoxNjc3OTA4NDE2fQ.BlMcjNpNc78O1essNfpdqSZoQYF1_Ys3TUDXW51sayg";
 
   //Fetching makeId
   async getMake(name: any): Promise<AnyAaaaRecord> {
@@ -106,6 +106,7 @@ export class ApiService {
     return check;
   }
 
+  //Fetching Registerd Vehicle Id
   async getRegVehicles(registerNo: any, masterId: any ): Promise<AnyAaaaRecord> {
     const data = await this.http
       .get(
@@ -120,6 +121,7 @@ export class ApiService {
     return chk;
   }
 
+  //Creating vehicle
   async createCxVehicle(customerId, clientIds, Vehicle_Register_No, masterId): Promise<any> {
     const body = {
       "customerId": customerId, "regNo": Vehicle_Register_No, "clientId": [clientIds], "vehicleMasterId": masterId
@@ -140,20 +142,7 @@ export class ApiService {
     }
   }
 
-
-  async getRegistVehicleId(registerdId: any, masterId: any): Promise<any> {
-    const data = await this.http
-      .get(
-        this.url + `vehicle-registered/query?id=${registerdId}&vehicleMaster=${masterId}`, { headers: { Authorization: `Bearer ${this.token}` } }
-      )
-      .pipe(map((resp) => resp.data))
-      .toPromise()
-      .catch((err) => {
-        throw new HttpException(err.response.data, err.response.status);
-      });
-    return data.data;
-  }
-
+  //creating subscription
   async createSubscrip(body: any): Promise<any> {
     try {
       const data = await this.http

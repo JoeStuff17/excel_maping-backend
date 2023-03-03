@@ -14,11 +14,11 @@ import { WrapperModule } from './wrapper/wrapper.module';
     TypeOrmModule.forRootAsync({
       useFactory: () => ({
         type: 'mysql',
-        host: 'localhost',
         port: 3306,
-        username: 'root',
-        password: '',
-        database: 'excel_mapping',
+        host: process.env.DB_IP,
+        username: process.env.DB_USER,
+        password: process.env.DB_PASS,
+        database: process.env.DB_NAME,
         autoLoadEntities: true,
         synchronize: true,
       })
@@ -32,4 +32,4 @@ import { WrapperModule } from './wrapper/wrapper.module';
   controllers: [WrapperController],
   providers: [ApiService, WrapperService],
 })
-export class AppModule {}
+export class AppModule { }

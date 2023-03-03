@@ -8,12 +8,8 @@ import {
     JoinColumn,
     ManyToOne
 } from "typeorm";
+import { STATUS } from 'src/success-record/entity/success-record.entity';
 
-export enum status{
-    uploaded = "UPLOADED",
-    processing = "PROCESSING",
-    created = "CREATED"
-}
 
 @Entity({ name: 'failed_record' })
 export class FailedRecordEntity {
@@ -28,7 +24,7 @@ export class FailedRecordEntity {
     Customer_Name: string;
 
     @Column({ nullable: true })
-    Customer_MobileNo: number;
+    Customer_MobileNo: string;
 
     @Column({ nullable: true })
     Vehicle_Brand: string;
@@ -58,7 +54,10 @@ export class FailedRecordEntity {
     @JoinColumn()
     batch: RecordBatchEntity;
 
-    @Column({default: status.processing})
+    @Column({default: null})
+    processed: boolean;
+
+    @Column({default: STATUS.PROCESSING})
     status: string;
 
     @CreateDateColumn()

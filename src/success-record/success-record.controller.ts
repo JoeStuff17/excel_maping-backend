@@ -6,14 +6,14 @@ import { Request } from 'express';
 
 @Controller('success-record')
 export class SuccessRecordController {
-  constructor(private fileService: SuccessRecordService) { }
+  constructor(private successRecordService: SuccessRecordService) { }
 
 
   ///----Adding data----///
   @Post('/create')
   @UsePipes(ValidationPipe)
   async create(@Res() res, @Body() payload: { data: any[] }): Promise<any> {
-    const file = await this.fileService.creates(payload);
+    const file = await this.successRecordService.creates(payload);
     // const file = await this.fileService.create(payload);
 
     return res.status(HttpStatus.OK).json({
@@ -37,25 +37,34 @@ export class SuccessRecordController {
       }
     }),
   }))
-  uploadFile(
-    @UploadedFile(new ParseFilePipe({
-      validators: [
-        // new MaxFileSizeValidator({ maxSize: 2000 }),
-        // new FileTypeValidator({ fileType: 'xlsx' }),
-      ],
-    }),
-    ) file: Express.Multer.File) {
-    return {
-      imagePath: file.path,
+  async uploadFile(@Res() res, @UploadedFile() file: any): Promise<any> {    
+    const uploadFile = await this.successRecordService.fileUpload(file);
+    return res.status(HttpStatus.OK).json({
       success: true,
-      message: "File Upladed Successfully"
-    };
+      file: uploadFile
+    });
   }
+
+// uploadFile(
+  //   @UploadedFile(new ParseFilePipe({
+  //     validators: [
+  //       // new MaxFileSizeValidator({ maxSize: 2000 }),
+  //       // new FileTypeValidator({ fileType: 'xlsx' }),
+  //     ],
+  //   }),
+  //   ) file: Express.Multer.File) {
+  //   return {
+  //     imagePath: file.path,
+  //     success: true,
+  //     message: "File Upladed Successfully"
+  //   };
+  // }
+
 
   ///----Fetching table headers----///
   @Get('/fetch')
   async tableHeaders(@Res() res): Promise<any> {
-    const head = await this.fileService.readsheet();
+    const head = await this.successRecordService.readsheet();
     return res.status(HttpStatus.OK).json({
       success: head.success,
       message: head.message,
@@ -66,7 +75,7 @@ export class SuccessRecordController {
 
   @Get('/tot-count')
   async rowCount(@Res() res): Promise<any> {
-    const c = await this.fileService.countRow();
+    const c = await this.successRecordService.countRow();
     return res.status(HttpStatus.OK).json({
       success: c.success,
       message: c.message,
@@ -76,7 +85,7 @@ export class SuccessRecordController {
 
   @Get('/suc-records')
   async getRec(@Res() res): Promise<any> {
-    const c = await this.fileService.getRecords();
+    const c = await this.successRecordService.getRecords();
     return res.status(HttpStatus.OK).json({
       success: c.success,
       message: c.message,
@@ -86,7 +95,7 @@ export class SuccessRecordController {
 
   // @Get('/findById')
   // async getMakes(@Res() res,@Req() payload:Request): Promise<any> {
-  //   const id = await this.fileService.getMakes(payload);
+  //   const id = await this.successRecordService.getMakes(payload);
   //   return res.status(HttpStatus.OK).json({
   //     success: id.success,
   //     message: id.message,

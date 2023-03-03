@@ -4,16 +4,11 @@ import {
 } from "typeorm";
 import { RecordBatchEntity } from '../../record-batch/entity/record-batch.entity';
 
-export enum status{
-    uploaded = "UPLOADED",
-    processing = "PROCESSING",
-    created = "CREATED"
-}
-
-export enum processed{
-    true = "True",
-    false = "False",
-    null = "Null"
+export enum STATUS{
+    UPLOADED = "UPLOADED",
+    PROCESSING = "PROCESSING",
+    CREATED = "SUBSCRIPTION CREATED",
+    EMPTY = "FIELD EMPTY"
 }
 
 @Entity({ name: 'success_record' })
@@ -59,14 +54,14 @@ export class SuccessRecordEntity {
     @JoinColumn()
     batch: RecordBatchEntity;
 
-    @Column({default: status.processing})
+    @Column({default: STATUS.PROCESSING})
     status: string;
 
     @Column({ nullable: true })
     Subscription_Id: number;
 
-    @Column({default: processed.null})
-    processed: string;
+    @Column({default: null})
+    processed: boolean;
 
     @CreateDateColumn()
     createdAt: Date;

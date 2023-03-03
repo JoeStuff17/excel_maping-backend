@@ -14,7 +14,7 @@ export class FailedRecordService {
 		const fd = await this.failRecRepo.save(faildata);
 		return {
 			success: true,
-			message: "Null_data Uploaded in failed_Rec successfully",
+			message: 'Null_data Uploaded in failed_Rec successfully',
 			data: fd
 			// err: 
 		}

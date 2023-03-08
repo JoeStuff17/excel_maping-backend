@@ -274,13 +274,29 @@ export class SuccessRecordService {
   }
 
   async getRecords() {
-    const r = await this.succcessRepo.find(
+    const record = await this.succcessRepo.find(
+
       { relations: ['batch'] }
     );
     return {
       success: true,
       message: 'Success-Records Fetched Successfully!',
-      data: r,
+      data: record,
+    };
+  }
+
+  async getRecordsByID(payload: { batch: any }) {
+    // const batchData = await this.batchService.fetchOne(payload.batch);
+
+    const record = await this.succcessRepo.createQueryBuilder('successRecord').where('successRecord.batchId=:batchid', { batchid: payload.batch })
+      .leftJoinAndSelect('successRecord.batch', 'batch')
+      .getMany();
+
+    // const record = await this.succcessRepo.find({where: {batch: batchData.id as any}, loadRelationIds: true });
+    return {
+      success: true,
+      message: 'Success-Records Fetched Successfully!',
+      data: record,
     };
   }
 
@@ -295,7 +311,7 @@ export class SuccessRecordService {
       console.log('Vehicle brand Error'); //Send
       this.fpc += 1;
       await this.succcessRepo.update(
-        { id: sd.id }, { status: 'Vehicle brand Error' , processed: false}
+        { id: sd.id }, { status: 'Vehicle brand Error', processed: false }
       );
     }
     this.makeId = vehicleData;
@@ -318,7 +334,7 @@ export class SuccessRecordService {
         console.log('Vehicle model Error'); //Send to frontEnd
         this.fpc += 1;
         await this.succcessRepo.update(
-          {id: sd.id }, { status: 'Vehicle model Error' , processed: false}
+          { id: sd.id }, { status: 'Vehicle model Error', processed: false }
         );
       }
     }
@@ -341,7 +357,7 @@ export class SuccessRecordService {
         console.log('PlanId Error'); //send
         this.fpc += 1;
         await this.succcessRepo.update(
-          { id: sd.id }, { status: 'planId Error' , processed: false}
+          { id: sd.id }, { status: 'planId Error', processed: false }
         );
       }
     }
@@ -373,7 +389,7 @@ export class SuccessRecordService {
         console.log('Not a valid mobileNo');//send to frontEnd
         this.fpc += 1;
         await this.succcessRepo.update(
-          { id: sd.id }, { status: 'Mobile no Error', processed: false}
+          { id: sd.id }, { status: 'Mobile no Error', processed: false }
         );
       }
     }
@@ -427,7 +443,7 @@ export class SuccessRecordService {
         console.log('Vehicle RegNo already exist', chk); // Send to frontEnd
         this.fpc += 1;
         await this.succcessRepo.update(
-          { id: sd.id }, { status: 'Vehicle RegisterNo already exist' , processed: false}
+          { id: sd.id }, { status: 'Vehicle RegisterNo already exist', processed: false }
         );
       } else {
         createRegVehicle = await this.api.createCxVehicle(customerId, clientIds, Vehicle_Register_No, masterId); //creating Registered Vehicle for new Cx
@@ -472,8 +488,7 @@ export class SuccessRecordService {
     if (amount > 0 && masterId > 0 && customerId > 0 && Seller_Id > 0 &&
       Plan_Id > 0 && lat > 0.0 && lng > 0.0 && Plan_Purchased_Date > 0 && registerVehicleId > 0 && Vehicle_Register_No !== null) {
       this.subCreatedId = await this.api.createSubscrip(body);
-      console.log(this.subCreatedId.data);
-      
+
       if (this.subCreatedId.data) {
         this.spc += 1;
         await this.succcessRepo.update(

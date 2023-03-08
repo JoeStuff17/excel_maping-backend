@@ -1,5 +1,5 @@
 import { diskStorage } from 'multer';
-import { Body, Controller, Get, HttpStatus, ParseFilePipe, Post, Query, Req, Res, UploadedFile, UseInterceptors, UsePipes, ValidationPipe } from '@nestjs/common';
+import { Body, Controller, Get, HttpStatus, Post, Query, Res, UploadedFile, UseInterceptors, UsePipes, ValidationPipe } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { SuccessRecordService } from './success-record.service';
 import { Request } from 'express';
@@ -70,37 +70,37 @@ export class SuccessRecordController {
       message: head.message,
       data: head.data,
       error: head.err
-    })
+    });
   }
 
   @Get('/tot-count')
   async rowCount(@Res() res): Promise<any> {
-    const c = await this.successRecordService.countRow();
+    const count = await this.successRecordService.countRow();
     return res.status(HttpStatus.OK).json({
-      success: c.success,
-      message: c.message,
-      data: c.data,
-    })
+      success: count.success,
+      message: count.message,
+      data: count.data
+    });
   }
 
   @Get('/suc-records')
   async getRec(@Res() res): Promise<any> {
-    const c = await this.successRecordService.getRecords();
+    const count = await this.successRecordService.getRecords();
     return res.status(HttpStatus.OK).json({
-      success: c.success,
-      message: c.message,
-      data: c.data,
-    })
+      success: count.success,
+      message: count.message,
+      data: count.data
+    });
   }
 
-  // @Get('/findById')
-  // async getMakes(@Res() res,@Req() payload:Request): Promise<any> {
-  //   const id = await this.successRecordService.getMakes(payload);
-  //   return res.status(HttpStatus.OK).json({
-  //     success: id.success,
-  //     message: id.message,
-  //     data: id.data,
-  //   })
-  // }
+  @Get('/findById')
+  async getRecords(@Res() res, @Query() payload: {batch: number}) {    
+    const id = await this.successRecordService.getRecordsByID(payload);
+    return res.status(HttpStatus.OK).json({
+      success: id.success,
+      message: id.message,
+      data: id.data
+    });
+  }
 
 }

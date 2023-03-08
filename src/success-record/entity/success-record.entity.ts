@@ -11,6 +11,8 @@ export enum STATUS{
     EMPTY = "FIELD EMPTY"
 }
 
+
+
 @Entity({ name: 'success_record' })
 export class SuccessRecordEntity {
 

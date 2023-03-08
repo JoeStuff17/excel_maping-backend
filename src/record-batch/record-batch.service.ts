@@ -35,4 +35,8 @@ export class RecordBatchService {
       data: c,
     };
   }
+
+  async fetchOne(id: number) {
+    return this.batchRepository.findOne({where: {id}});
+  }
 }

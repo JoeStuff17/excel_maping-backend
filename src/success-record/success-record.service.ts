@@ -8,8 +8,6 @@ import { Repository } from 'typeorm';
 import { RecordBatchService } from 'src/record-batch/record-batch.service';
 import { DateTime } from "luxon";
 
-var xml = require('fs');
-
 @Injectable()
 export class SuccessRecordService {
   constructor(
@@ -29,8 +27,8 @@ export class SuccessRecordService {
   registerVehicleId: number;
   subCreatedId: any;
   position: any = [];
-  spc = 0;
-  fpc = 0;
+  spc = 0; //success process count
+  fpc = 0; //failed process count
 
   excelDateToJSDate(serial) {
     var utc_days = Math.floor(serial - 25569);
@@ -53,18 +51,16 @@ export class SuccessRecordService {
   }
 
   async creates(payload) {
-    // let s = 0;
-    let sd: any = [];
-    const fc = [];
-    let sc = 0;
+    let sucessData: any = [];
+    const failedCount = [];
+    let sucessCount = 0;
     let clientIds: any;
+    // clientIds = payload.Client_Id[0];
+    clientIds = 1;
     const purpose = 'subscription';
     this.batch = await this.batchService.create({
       totalCount: payload.length,
     });
-
-    // clientIds = payload.Client_Id[0];
-    clientIds = 1;
 
     for (let i = 0; i < payload.length; i++) {
       this.purchaseDate = this.excelDateToJSDate(payload[i].Plan_Purchased_Date);
@@ -73,7 +69,7 @@ export class SuccessRecordService {
         payload[i].Vehicle_Model == null || payload[i].Seller_Id == null || payload[i].lat == null
         || payload[i].lng == null || payload[i].Plan_Purchased_Date == null || payload[i].Plan_Id == null) {
 
-        fc.push({
+        failedCount.push({
           Client_Id: clientIds,
           Customer_Name: payload[i].Customer_Name,
           Customer_MobileNo: payload[i].Customer_MobileNo,
@@ -89,11 +85,8 @@ export class SuccessRecordService {
           status: STATUS.EMPTY,
           batch: this.batch.id
         });
-        await this.failedRecordService.createFailRec(fc);
-
-
+        await this.failedRecordService.createFailRec(failedCount);
       } else {
-        // payload.batch = Array(payload.Client_Id.length).fill(batch.id);
         const successdata = this.succcessRepo.create({
           Client_Id: clientIds,
           Customer_Name: payload[i].Customer_Name,
@@ -108,22 +101,22 @@ export class SuccessRecordService {
           Plan_Id: payload[i].Plan_Id,
           batch: this.batch.id,
         });
-        sd = await this.succcessRepo.save(successdata);
-        sc += 1;
+        sucessData = await this.succcessRepo.save(successdata);
+        sucessCount += 1;
       }
       await this.batchService.update({
         id: this.batch.id, data: {
           Client_Id: clientIds,
           totalCount: payload.length,
-          successCount: sc,
-          failedCount: fc.length,
+          successCount: sucessCount,
+          failedCount: failedCount.length,
           success_ProcessedCount: this.spc,
           failed_ProcessedCount: this.fpc,
           purpose: purpose
         }
       });
       //Splicing
-      let makeData = await this.getMakes(payload[i].Vehicle_Brand, sd);
+      let makeData = await this.getMakes(payload[i].Vehicle_Brand, sucessData);
       if (makeData.data == 0) {
         payload[i].Vehicle_Model = null;
         payload[i].Plan_Id = 0;
@@ -136,7 +129,7 @@ export class SuccessRecordService {
         payload[i].Plan_Purchased_Date = 0;
       }
 
-      let master = await this.getMaster(this.makeId, payload[i].Vehicle_Model, sd);
+      let master = await this.getMaster(this.makeId, payload[i].Vehicle_Model, sucessData);
       if (master.data == 0) {
         payload[i].Vehicle_Model = null;
         payload[i].Plan_Id = 0;
@@ -149,7 +142,7 @@ export class SuccessRecordService {
         payload[i].Plan_Purchased_Date = 0;
       }
 
-      let amt = await this.getAmounts(payload[i].Plan_Id, sd);
+      let amt = await this.getAmounts(payload[i].Plan_Id, sucessData);
       if (amt.data == 0) {
         payload[i].Vehicle_Model = null;
         payload[i].Plan_Id = 0;
@@ -162,7 +155,7 @@ export class SuccessRecordService {
         payload[i].Plan_Purchased_Date = 0;
       }
 
-      let cx = await this.createCxId(payload[i].Customer_Name, payload[i].Customer_MobileNo, clientIds, sd);
+      let cx = await this.createCxId(payload[i].Customer_Name, payload[i].Customer_MobileNo, clientIds, sucessData);
       if (cx.data == undefined) {
         payload[i].Vehicle_Model = null;
         payload[i].Plan_Id = 0;
@@ -175,7 +168,7 @@ export class SuccessRecordService {
         payload[i].Plan_Purchased_Date = 0;
       }
 
-      let regVehicle = await this.getRegVehicleId(this.customerId, clientIds, payload[i].Vehicle_Register_No, this.masterId, sd);
+      let regVehicle = await this.getRegVehicleId(this.customerId, clientIds, payload[i].Vehicle_Register_No, this.masterId, sucessData);
       if (regVehicle.data == undefined) {
         payload[i].Vehicle_Model = null;
         payload[i].Plan_Id = 0;
@@ -201,44 +194,14 @@ export class SuccessRecordService {
         payload[i].Seller_Id,
         payload[i].Vehicle_Register_No,
         payload[i].Customer_Name,
-        sd
+        sucessData
       );
     }
-
-
     return {
       success: true,
       message: 'success',
-      data: sc,
-      err: fc.length
-    }
-  }
-
-  //Rough work
-  async create(payload: any) {
-    if (payload.length > 0) {
-      // Create batch
-      const batch: any = await this.batchService.create({
-        successCount: payload.length,
-        totalCount: payload.length
-      });
-      const clientIds = [];
-      for (const p of payload) {
-        p.batch = batch.id;
-        clientIds.push(p.Client_Id);
-        await this.batchService.update({ id: batch.id, data: { Client_Id: clientIds } });
-        const createdData = await this.succcessRepo.create(p);
-        const saveData: any = await this.succcessRepo.save(createdData);
-      }
-      return {
-        success: true, message: 'Created successfully',
-        data: {}
-      }
-    } else {
-      return {
-        success: false, message: '',
-        data: {}
-      }
+      data: sucessCount,
+      err: failedCount.length
     }
   }
 
@@ -301,7 +264,7 @@ export class SuccessRecordService {
   }
 
   //Calling vehicle Make api
-  async getMakes(payload: any, sd): Promise<any> {
+  async getMakes(payload: any, sucessData): Promise<any> {
     let vehicleData: any = [];
     let data: any;
     data = await this.api.getMake(payload)
@@ -311,7 +274,7 @@ export class SuccessRecordService {
       console.log('Vehicle brand Error'); //Send
       this.fpc += 1;
       await this.succcessRepo.update(
-        { id: sd.id }, { status: 'Vehicle brand Error', processed: false }
+        { id: sucessData.id }, { status: 'Vehicle brand Error', processed: false }
       );
     }
     this.makeId = vehicleData;
@@ -320,11 +283,10 @@ export class SuccessRecordService {
       message: 'Makes Id fetched',
       data: this.makeId,
     }
-
   }
 
   //Calling masterId api
-  async getMaster(makeid, payload: any, sd): Promise<any> {
+  async getMaster(makeid, payload: any, sucessData): Promise<any> {
     let masterdata: any = [];
     if (payload !== null) {
       const data = await this.api.getMasterId(makeid, payload);
@@ -334,7 +296,7 @@ export class SuccessRecordService {
         console.log('Vehicle model Error'); //Send to frontEnd
         this.fpc += 1;
         await this.succcessRepo.update(
-          { id: sd.id }, { status: 'Vehicle model Error', processed: false }
+          { id: sucessData.id }, { status: 'Vehicle model Error', processed: false }
         );
       }
     }
@@ -347,7 +309,7 @@ export class SuccessRecordService {
   }
 
   //Calling planId api for amount
-  async getAmounts(payload: any, sd): Promise<any> {
+  async getAmounts(payload: any, sucessData): Promise<any> {
     let amountData: any = [];
     if (payload !== 0) {
       const data = await this.api.getAmount(payload);
@@ -357,7 +319,7 @@ export class SuccessRecordService {
         console.log('PlanId Error'); //send
         this.fpc += 1;
         await this.succcessRepo.update(
-          { id: sd.id }, { status: 'planId Error', processed: false }
+          { id: sucessData.id }, { status: 'planId Error', processed: false }
         );
       }
     }
@@ -371,7 +333,7 @@ export class SuccessRecordService {
   }
 
   //Calling customer id
-  async createCxId(Customer_Name, Customer_MobileNo, clientIds, sd): Promise<any> {
+  async createCxId(Customer_Name, Customer_MobileNo, clientIds, sucessData): Promise<any> {
     let customer: any = [];
     let createNew: any = [];
     this.customerId = null;
@@ -382,14 +344,14 @@ export class SuccessRecordService {
           this.customerId = customer.id;
         } else {
           console.log('Not existing Cx');
-          createNew = await this.createCx(Customer_Name, Customer_MobileNo, clientIds, sd); //creating Customer
+          createNew = await this.createCx(Customer_Name, Customer_MobileNo, clientIds, sucessData); //creating Customer
           this.customerId = createNew.data.id;
         }
       } else {
         console.log('Not a valid mobileNo');//send to frontEnd
         this.fpc += 1;
         await this.succcessRepo.update(
-          { id: sd.id }, { status: 'Mobile no Error', processed: false }
+          { id: sucessData.id }, { status: 'Mobile no Error', processed: false }
         );
       }
     }
@@ -401,7 +363,7 @@ export class SuccessRecordService {
   }
 
   //create new Cx
-  async createCx(Customer_Name, Customer_MobileNo, clientIds, sd) {
+  async createCx(Customer_Name, Customer_MobileNo, clientIds, sucessData) {
     let createNew: any = [];
     if (Customer_Name !== null) {
       createNew = await this.api.createCx(Customer_Name, Customer_MobileNo, clientIds); //creating Customer
@@ -415,13 +377,13 @@ export class SuccessRecordService {
   }
 
   //get Register VehicleId - if not create vehicle 
-  async getRegVehicleId(customerId, clientIds, Vehicle_Register_No, masterId, sd): Promise<any> {
+  async getRegVehicleId(customerId, clientIds, Vehicle_Register_No, masterId, sucessData): Promise<any> {
     let createRegVehicle: any = [];
     if (customerId !== 0 && Vehicle_Register_No !== null) {
       const id = await this.api.getRegVehicles(Vehicle_Register_No, masterId);
       if (!id['data']) {
         //create vehicle
-        createRegVehicle = await this.createVehicle(customerId, clientIds, Vehicle_Register_No, masterId, sd);
+        createRegVehicle = await this.createVehicle(customerId, clientIds, Vehicle_Register_No, masterId, sucessData);
         this.registerVehicleId = createRegVehicle.data;
       } else {
         this.registerVehicleId = id['data'][0].id;
@@ -435,7 +397,7 @@ export class SuccessRecordService {
   }
 
   //Creating vehicle for new Cx
-  async createVehicle(customerId, clientIds, Vehicle_Register_No, masterId, sd): Promise<any> {
+  async createVehicle(customerId, clientIds, Vehicle_Register_No, masterId, sucessData): Promise<any> {
     let createRegVehicle: any = [];
     if (customerId !== 0 && Vehicle_Register_No !== null) {
       const chk = await this.api.getRegVehicleCheck(Vehicle_Register_No); //case 1
@@ -443,7 +405,7 @@ export class SuccessRecordService {
         console.log('Vehicle RegNo already exist', chk); // Send to frontEnd
         this.fpc += 1;
         await this.succcessRepo.update(
-          { id: sd.id }, { status: 'Vehicle RegisterNo already exist', processed: false }
+          { id: sucessData.id }, { status: 'Vehicle RegisterNo already exist', processed: false }
         );
       } else {
         createRegVehicle = await this.api.createCxVehicle(customerId, clientIds, Vehicle_Register_No, masterId); //creating Registered Vehicle for new Cx
@@ -457,10 +419,8 @@ export class SuccessRecordService {
   }
 
   async createSubscription(amount, masterId, customerId, clientIds, Plan_Id,
-    lat, lng, Plan_Purchased_Date, registerVehicleId, Seller_Id, Vehicle_Register_No, Customer_Name, sd): Promise<any> {
-
+    lat, lng, Plan_Purchased_Date, registerVehicleId, Seller_Id, Vehicle_Register_No, Customer_Name, sucessData): Promise<any> {
     const converterd = DateTime.fromISO(Plan_Purchased_Date.toISOString()).toJSDate();
-
     const body = {
       purchaseType: '1',
       targetUserType: '1',
@@ -492,18 +452,17 @@ export class SuccessRecordService {
       if (this.subCreatedId.data) {
         this.spc += 1;
         await this.succcessRepo.update(
-          { id: sd.id }, { status: STATUS.CREATED, Subscription_Id: this.subCreatedId.data.subscriptionId, processed: true } //success
+          { id: sucessData.id }, { status: STATUS.CREATED, Subscription_Id: this.subCreatedId.data.subscriptionId, processed: true } //success
         );
         await this.batchService.update({
           id: this.batch.id, data: {
             success_ProcessedCount: this.spc
           }
         });
-
       } else {
         this.fpc += 1;
         await this.succcessRepo.update(
-          { id: sd.id }, { status: this.subCreatedId.message, Subscription_Id: null, processed: false } //failed
+          { id: sucessData.id }, { status: this.subCreatedId.message, Subscription_Id: null, processed: false } //failed
         );
         await this.batchService.update({
           id: this.batch.id, data: {
@@ -518,6 +477,5 @@ export class SuccessRecordService {
       // data: this.subCreatedId !== null ? this.subCreatedId.subscriptionId : this.subCreatedId.message
     }
   }
-
 }
 

@@ -2,7 +2,6 @@ import { diskStorage } from 'multer';
 import { Body, Controller, Get, HttpStatus, Post, Query, Res, UploadedFile, UseInterceptors, UsePipes, ValidationPipe } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { SuccessRecordService } from './success-record.service';
-import { Request } from 'express';
 
 @Controller('success-record')
 export class SuccessRecordController {
@@ -12,10 +11,8 @@ export class SuccessRecordController {
   ///----Adding data----///
   @Post('/create')
   @UsePipes(ValidationPipe)
-  async create(@Res() res, @Body() payload: { data: any[] }): Promise<any> {
+  async create(@Res() res, @Body() payload ): Promise<any> {
     const file = await this.successRecordService.creates(payload);
-    // const file = await this.fileService.create(payload);
-
     return res.status(HttpStatus.OK).json({
       success: file.success,
       message: file.message,
@@ -44,22 +41,6 @@ export class SuccessRecordController {
       file: uploadFile
     });
   }
-
-// uploadFile(
-  //   @UploadedFile(new ParseFilePipe({
-  //     validators: [
-  //       // new MaxFileSizeValidator({ maxSize: 2000 }),
-  //       // new FileTypeValidator({ fileType: 'xlsx' }),
-  //     ],
-  //   }),
-  //   ) file: Express.Multer.File) {
-  //   return {
-  //     imagePath: file.path,
-  //     success: true,
-  //     message: "File Upladed Successfully"
-  //   };
-  // }
-
 
   ///----Fetching table headers----///
   @Get('/fetch')

@@ -39,10 +39,10 @@ export class SuccessRecordService {
 
   //File upload
   async fileUpload(file) {
-    await this.fileService.upload(file, 'subscription', process.env.BUCKET_NAME);
+    await this.fileService.upload(file, 'client-side-subscription', process.env.BUCKET_NAME);
     return ({
       bucketName: process.env.BUCKET_NAME,
-      path: 'subscription',
+      path: 'client-side-subscription',
       displayName: file.filename,
       extension: file.filename.split('.').pop(),
       mimeType: file.mimetype,
@@ -52,8 +52,8 @@ export class SuccessRecordService {
 
   async creates(payload) {
     let sucessData: any = [];
-    const failedCount = [];
-    let sucessCount = 0;
+    const countFailed = [];
+    let countSuccess = 0;
     let clientIds: any;
     // clientIds = payload.Client_Id[0];
     clientIds = 1;
@@ -69,7 +69,7 @@ export class SuccessRecordService {
         payload[i].Vehicle_Model == null || payload[i].Seller_Id == null || payload[i].lat == null
         || payload[i].lng == null || payload[i].Plan_Purchased_Date == null || payload[i].Plan_Id == null) {
 
-        failedCount.push({
+          countFailed.push({
           Client_Id: clientIds,
           Customer_Name: payload[i].Customer_Name,
           Customer_MobileNo: payload[i].Customer_MobileNo,
@@ -85,7 +85,7 @@ export class SuccessRecordService {
           status: STATUS.EMPTY,
           batch: this.batch.id
         });
-        await this.failedRecordService.createFailRec(failedCount);
+        await this.failedRecordService.createFailRec(countFailed);
       } else {
         const successdata = this.succcessRepo.create({
           Client_Id: clientIds,
@@ -102,14 +102,14 @@ export class SuccessRecordService {
           batch: this.batch.id,
         });
         sucessData = await this.succcessRepo.save(successdata);
-        sucessCount += 1;
+        countSuccess += 1;
       }
       await this.batchService.update({
         id: this.batch.id, data: {
           Client_Id: clientIds,
           totalCount: payload.length,
-          successCount: sucessCount,
-          failedCount: failedCount.length,
+          successCount: countSuccess,
+          failedCount: countFailed.length,
           success_ProcessedCount: this.spc,
           failed_ProcessedCount: this.fpc,
           purpose: purpose
@@ -200,8 +200,8 @@ export class SuccessRecordService {
     return {
       success: true,
       message: 'success',
-      data: sucessCount,
-      err: failedCount.length
+      data: countSuccess,
+      err: countFailed.length
     }
   }
 
